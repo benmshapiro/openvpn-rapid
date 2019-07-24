@@ -76,3 +76,87 @@ function initialCheck () {
 	fi
 	checkOp
 }
+
+function setUnbound () {
+	if [[ ! -e /etc/unbound/unbound.conf ]]; then
+
+		if [[ "$OS" =~ (debian|ubuntu) ]]; then
+			apt-get install -y unbound
+
+			# Debian Configuration
+			echo "interface: 10.8.0.1
+access-control: 10.8.0.1/24 allow
+hide-identity: yes
+hide-version: yes
+use-caps-for-id: yes
+prefetch: yes" >> /etc/unbound/unbound.conf
+
+		elif [[ "$OS" = "centos" ]]; then
+			yum install -y unbound
+
+			# CentOS Configuration
+			sed -i 's|# interface: 0.0.0.0$|interface: 10.8.0.1|' /etc/unbound/unbound.conf
+			sed -i 's|# access-control: 127.0.0.0/8 allow|access-control: 10.8.0.1/24 allow|' /etc/unbound/unbound.conf
+
+		elif [[ "$OS" = "fedora" ]]; then
+			dnf install -y unbound
+
+			# Fedroa Configuration
+			sed -i 's|# interface: 0.0.0.0$|interface: 10.8.0.1|' /etc/unbound/unbound.conf
+			sed -i 's|# access-control: 127.0.0.0/8 allow|access-control: 10.8.0.1/24 allow|' /etc/unbound/unbound.conf
+
+		elif [[ "$OS" = "arch" ]]; then
+			pacman -Syu --noconfirm unbound
+			# Get root servers list
+			curl -o /etc/unbound/root.hints https://www.internic.net/domain/named.cache
+
+			mv /etc/unbound/unbound.conf /etc/unbound/unbound.conf.old
+
+			echo "server:
+	use-syslog: no
+	do-daemonize: no
+	username: "unbound"
+	directory: "/etc/unbound"
+	trust-anchor-file: trusted-key.key
+	root-hints: root.hints
+	interface: 10.8.0.1
+	access-control: 10.8.0.1/24 allow
+	port: 53
+	num-threads: 2
+	use-caps-for-id: yes
+	harden-glue: yes
+	hide-identity: yes
+	hide-version: yes
+	qname-minimisation: yes
+	prefetch: yes" > /etc/unbound/unbound.conf
+		fi
+
+		if [[ ! "$OS" =~ (fedora|centos) ]];then
+			# DNS Rebinding fix
+			echo "private-address: 10.0.0.0/8
+private-address: 172.16.0.0/12
+private-address: 192.168.0.0/16
+private-address: 169.254.0.0/16
+private-address: 127.0.0.0/8" >> /etc/unbound/unbound.conf
+		fi
+	else # If Unbound is already installed
+		echo "include: /etc/unbound/openvpn.conf" >> /etc/unbound/unbound.conf
+
+		# Add Unbound 'server' for the OpenVPN subnet
+		echo "server:
+interface: 10.8.0.1
+access-control: 10.8.0.1/24 allow
+hide-identity: yes
+hide-version: yes
+use-caps-for-id: yes
+prefetch: yes
+private-address: 10.0.0.0/8
+private-address: 172.16.0.0/12
+private-address: 192.168.0.0/16
+private-address: 169.254.0.0/16
+private-address: 127.0.0.0/8" > /etc/unbound/openvpn.conf
+	fi
+
+		systemctl enable unbound
+		systemctl restart unbound
+}
