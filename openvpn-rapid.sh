@@ -194,6 +194,22 @@ function installQuestions () {
 	echo "   1) Default: 1194"
 	echo "   2) Custom port"
 	echo "   3) Random port [49152-65535]"
+	until [[ "$PORT_CHOICE" =~ ^[1-3]$ ]]; do
+		read -rp "Port choice [1-3]: " -e -i 1 PORT_CHOICE
+	done
+	case $PORT_CHOICE in
+		1)
+			PORT="1194"
+		;;
+		2)
+			until [[ "$PORT" =~ ^[0-9]+$ ]] && [ "$PORT" -ge 1 ] && [ "$PORT" -le 65535 ]; do
+				read -rp "Custom port [1-65535]: " -e -i 1194 PORT
+			done
+		;;
+		3)
+			PORT=$(shuf -i49152-65535 -n1) # Generates random number within private ports range
+			echo "Random Port: $PORT"
+		;;
 
 	# OpenVPN protocol
 	echo ""
