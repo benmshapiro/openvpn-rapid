@@ -160,3 +160,111 @@ private-address: 127.0.0.0/8" > /etc/unbound/openvpn.conf
 		systemctl enable unbound
 		systemctl restart unbound
 }
+
+function installQuestions () {
+	echo "Welcome to the Rapid OpenVPN installer!"
+	echo "The git repository is available at: https://github.com/benmshapiro/openvpn-rapid"
+	echo ""
+	echo "You need to answer a few questions before starting the installation."
+	echo "To use default options, just press 'enter' if you are ok with them."
+	echo ""
+	echo "You need to know the IPv4 address of the network interface you want OpenVPN listening to."
+	echo "Unless your server is behind NAT, it should be your public IPv4 address."
+
+
+	# Detect public IPv4 address and pre-fill for the user
+	# If a private IP address, the server must be behind NAT
+
+	echo "This server is behind NAT. What is its public IPv4 address or hostname?"
+	echo "You need it for the clients to connect to the server."
+
+	# OpenVPN port options
+	echo ""
+	echo "What port do you want OpenVPN to listen to?"
+	echo "   1) Default: 1194"
+	echo "   2) Custom port"
+	echo "   3) Random port [49152-65535]"
+
+	# OpenVPN protocol
+	echo ""
+	echo "What protocol do you want OpenVPN to use?"
+	echo "UDP is prefered. Unless it is not available, you shouldn't use TCP."
+	echo "   1) UDP"
+	echo "   2) TCP"
+
+	# DNS resolver options
+	echo ""
+	echo "What DNS provider do you want to use with OpenVPN?"
+	echo "   1) Current system resolvers (from /etc/resolv.conf)"
+	echo "   2) Self-hosted DNS Resolver (Unbound)"
+	echo "   3) Cloudflare"
+	echo "   4) Quad9"
+	echo "   5) Quad9 uncensored"
+	echo "   6) OpenDNS"
+	echo "   7) Google"
+
+	# Compression options
+	echo ""
+	echo "Do you want to use compression?"
+	echo ""
+	echo "   1) LZ4-v2"
+	echo "   2) LZ4"
+	echo "   3) LZ0"
+
+
+	# Encyption options
+	echo ""
+	echo "Do you want to customize encryption settings?"
+	echo "Unless you know what you're doing, you should stick with the default parameters provided by the script."
+	echo ""
+
+	echo ""
+	echo "Choose which cipher you want to use for the data channel:"
+	echo "   1) AES-128-GCM (default)"
+	echo "   2) AES-192-GCM"
+	echo "   3) AES-256-GCM"
+	echo "   4) AES-128-CBC"
+	echo "   5) AES-192-CBC"
+	echo "   6) AES-256-CBC"
+
+	echo ""
+	echo "Choose a type of certificate to use:"
+	echo "   1) ECDSA (default)"
+	echo "   2) RSA"
+
+	echo ""
+	echo "Choose which cipher you want to use for the control channel:"
+	echo "   1) ECDHE-ECDSA-AES-128-GCM-SHA256 (recommended)"
+	echo "   2) ECDHE-ECDSA-AES-256-GCM-SHA384"
+
+
+	echo ""
+	echo "Choose what kind of Diffie-Hellman key you want to use:"
+	echo "   1) ECDH (recommended)"
+	echo "   2) DH"
+
+	echo "Which digest algorithm do you want to use for HMAC?"
+	echo "   1) SHA-256 (recommended)"
+	echo "   2) SHA-384"
+	echo "   3) SHA-512"
+
+	echo ""
+	echo "You can add an additional layer of security to the control channel with tls-auth and tls-crypt"
+	echo "tls-auth authenticates the packets, while tls-crypt authenticate and encrypt them."
+	echo "   1) tls-crypt (recommended)"
+	echo "   2) tls-auth"
+	
+	echo ""
+	echo "Okay, that was all I needed. We are ready to setup your OpenVPN server now."
+	echo "You will be able to generate a client at the end of the installation."
+
+	# Finalize setup
+	echo ""
+	echo "Okay, you are ready to setup your OpenVPN server now."
+	echo "You will be able to generate a client at the end of the installation."
+
+	}
+
+	function newClient () {
+		
+	}
