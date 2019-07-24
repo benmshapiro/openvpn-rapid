@@ -172,17 +172,21 @@ function installQuestions () {
 	echo "Unless your server is behind NAT, it should be your public IPv4 address."
 
 
-	# Detect public IPv4 address and pre-fill for the user
+	# Detect public IPv4 address and pre-fill for the user.
 	IP=$(ip addr | grep 'inet' | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | head -1)
 	APPROVE_IP=${APPROVE_IP:-n}
 	if [[ $APPROVE_IP =~ n ]]; then
 		read -rp "IPv4 address: " -e -i "$IP" IP
 	fi
-	
-	# If a private IP address, the server must be behind NAT
 
-	echo "This server is behind NAT. What is its public IPv4 address or hostname?"
-	echo "You need it for the clients to connect to the server."
+	# If private IP address, the server must be behind NAT.
+	if echo "$IP" | grep -qE '^(10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.|192\.168)'; then
+		echo ""
+		echo "This server is behind NAT. What is its public IPv4 address?"
+		until [[ "$ENDPOINT" != "" ]]; do
+			read -rp "Public IPv4 address or hostname: " -e ENDPOINT
+		done
+	fi
 
 	# OpenVPN port options
 	echo ""
