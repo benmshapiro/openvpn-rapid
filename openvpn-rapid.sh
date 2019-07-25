@@ -286,7 +286,7 @@ function installQuestions () {
 		esac
 	fi
 
-	# Encyption options
+	# Encryption options
 	echo ""
 	echo "Do you want to customize encryption settings?"
 	echo "Not sure? Stick with the default parameters provided by the script."
