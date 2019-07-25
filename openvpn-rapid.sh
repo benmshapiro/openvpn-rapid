@@ -299,13 +299,13 @@ function installQuestions () {
 		CIPHER="AES-128-GCM"
 		CERT_TYPE="1" # ECDSA
 		CERT_CURVE="prime256v1"
-		CC_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256"
+		CTRL_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256"
 		DH_TYPE="1" # ECDH
 		DH_CURVE="prime256v1"
 		HMAC_ALG="SHA256"
 		TLS_SIG="1" # tls-crypt
 	else
-
+	
 	echo ""
 	echo "Choose which cipher you want to use for the data channel:"
 	echo "   1) AES-128-GCM (default)"
@@ -314,17 +314,118 @@ function installQuestions () {
 	echo "   4) AES-128-CBC"
 	echo "   5) AES-192-CBC"
 	echo "   6) AES-256-CBC"
+	until [[ "$CIPHER_CHOICE" =~ ^[1-6]$ ]]; do
+			read -rp "Cipher [1-6]: " -e -i 1 CIPHER_CHOICE
+	done
+	case $CIPHER_CHOICE in
+		1)
+			CIPHER="AES-128-GCM"
+		;;
+		2)
+			CIPHER="AES-192-GCM"
+		;;
+		3)
+			CIPHER="AES-256-GCM"
+		;;
+		4)
+			IPHER="AES-128-CBC"
+		;;
+		5)
+			CIPHER="AES-192-CBC"
+		;;
+		6)
+			CIPHER="AES-256-CBC"
+		;;
+	esac
 
 	echo ""
 	echo "Choose a type of certificate to use:"
 	echo "   1) ECDSA (default)"
 	echo "   2) RSA"
+	until [[ $CERT_TYPE =~ ^[1-2]$ ]]; do
+			read -rp"Certificate key type [1-2]: " -e -i 1 CERT_TYPE
+	done
+	case $CERT_TYPE in
+		1)
+			echo ""
+			echo "Choose which curve you want to use for the certificate's key:"
+			echo "   1) prime256v1 (recommended)"
+			echo "   2) secp384r1"
+			echo "   3) secp521r1"
+			until [[ $CERT_CURVE_CHOICE =~ ^[1-3]$ ]]; do
+				read -rp"Curve [1-3]: " -e -i 1 CERT_CURVE_CHOICE
+			done
+			case $CERT_CURVE_CHOICE in
+				1)
+					CERT_CURVE="prime256v1"
+				;;
+				2)
+					CERT_CURVE="secp384r1"
+				;;
+				3)
+					CERT_CURVE="secp521r1"
+				;;
+			esac
+			;;
+		2)
+			echo ""
+			echo "Choose which size you want to use for the certificate's RSA key:"
+			echo "   1) 2048 bits (recommended)"
+			echo "   2) 3072 bits"
+			echo "   3) 4096 bits"
+			until [[ "$RSA_KEY_SIZE_CHOICE" =~ ^[1-3]$ ]]; do
+				read -rp "RSA key size [1-3]: " -e -i 1 RSA_KEY_SIZE_CHOICE
+			done
+			case $RSA_KEY_SIZE_CHOICE in
+				1)
+					RSA_KEY_SIZE="2048"
+				;;
+				2)
+					RSA_KEY_SIZE="3072"
+				;;
+				3)
+					RSA_KEY_SIZE="4096"
+				;;
+			esac
+		;;
+	esac
 
 	echo ""
 	echo "Choose which cipher you want to use for the control channel:"
 	echo "   1) ECDHE-ECDSA-AES-128-GCM-SHA256 (recommended)"
 	echo "   2) ECDHE-ECDSA-AES-256-GCM-SHA384"
-
+	case $CERT_TYPE in
+		1)
+			echo "   1) ECDHE-ECDSA-AES-128-GCM-SHA256 (recommended)"
+			echo "   2) ECDHE-ECDSA-AES-256-GCM-SHA384"
+			until [[ $CTRL_CIPHER_CHOICE =~ ^[1-2]$ ]]; do
+				read -rp"Control channel cipher [1-2]: " -e -i 1 CTRL_CIPHER_CHOICE
+			done
+			case $CTRL_CIPHER_CHOICE in
+				1)
+					CTRL_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256"
+				;;
+				2)
+					CTRL_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384"
+				;;
+			esac
+		;;
+		2)
+			echo "   1) ECDHE-RSA-AES-128-GCM-SHA256 (recommended)"
+			echo "   2) ECDHE-RSA-AES-256-GCM-SHA384"
+			until [[ $CTRL_CIPHER_CHOICE =~ ^[1-2]$ ]]; do
+				read -rp"Control channel cipher [1-2]: " -e -i 1 CTRL_CIPHER_CHOICE
+			done
+			case $CTRL_CIPHER_CHOICE in
+				1)
+					CTRL_CIPHER="TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256"
+				;;
+				2)
+					CTRL_CIPHER="TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384"
+				;;
+			esac
+		;;
+	esac
 
 	echo ""
 	echo "Choose what kind of Diffie-Hellman key you want to use:"
