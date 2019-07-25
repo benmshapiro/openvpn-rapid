@@ -239,21 +239,72 @@ function installQuestions () {
 	echo "   5) Quad9 uncensored"
 	echo "   6) OpenDNS"
 	echo "   7) Google"
+	until [[ "$DNS" =~ ^[0-9]+$ ]] && [ "$DNS" -ge 1 ]; do
+		read -rp "DNS [1-7]: " -e -i 3 DNS
+			if [[ $DNS == 2 ]] && [[ -e /etc/unbound/unbound.conf ]]; then
+				echo ""
+				echo "Unbound is already installed."
+				echo "You can allow the script to configure it in order to use it from your OpenVPN clients"
+				echo "The script will add a second server to '/etc/unbound/unbound.conf' for the OpenVPN subnet."
+				echo ""
+
+				until [[ $CONTINUE =~ (y|n) ]]; do
+					read -rp "Apply configuration changes to Unbound? [y/n]: " -e CONTINUE
+				done
+				if [[ $CONTINUE = "n" ]];then
+					# Break the loop
+					unset DNS
+					unset CONTINUE
+				fi
+			fi
+	done
 
 	# Compression options
 	echo ""
 	echo "Do you want to use compression?"
-	echo ""
+	until [[ $COMPRESSION_ENABLED =~ (y|n) ]]; do
+		read -rp"Enable compression? [y/n]: " -e -i n COMPRESSION_ENABLED
+	done
+	if [[ $COMPRESSION_ENABLED == "y" ]];then
+	echo "Choose which algorithm to use:"
 	echo "   1) LZ4-v2"
 	echo "   2) LZ4"
 	echo "   3) LZ0"
-
+	until [[ $COMPRESSION_CHOICE =~ ^[1-3]$ ]]; do
+			read -rp"Compression algorithm [1-3]: " -e -i 1 COMPRESSION_CHOICE
+		done
+		case $COMPRESSION_CHOICE in
+			1)
+			COMPRESSION_ALG="lz4-v2"
+			;;
+			2)
+			COMPRESSION_ALG="lz4"
+			;;
+			3)
+			COMPRESSION_ALG="lzo"
+			;;
+		esac
+	fi
 
 	# Encyption options
 	echo ""
 	echo "Do you want to customize encryption settings?"
-	echo "Unless you know what you're doing, you should stick with the default parameters provided by the script."
+	echo "Not sure? Stick with the default parameters provided by the script."
 	echo ""
+	until [[ $CUSTOMIZE_ENC =~ (y|n) ]]; do
+		read -rp "Change encryption settings? [y/n]: " -e -i n CUSTOMIZE_ENC
+	done
+	if [[ $CUSTOMIZE_ENC == "n" ]];then
+		# Use default, sane and fast parameters
+		CIPHER="AES-128-GCM"
+		CERT_TYPE="1" # ECDSA
+		CERT_CURVE="prime256v1"
+		CC_CIPHER="TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256"
+		DH_TYPE="1" # ECDH
+		DH_CURVE="prime256v1"
+		HMAC_ALG="SHA256"
+		TLS_SIG="1" # tls-crypt
+	else
 
 	echo ""
 	echo "Choose which cipher you want to use for the data channel:"
