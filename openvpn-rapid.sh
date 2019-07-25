@@ -431,6 +431,53 @@ function installQuestions () {
 	echo "Choose what kind of Diffie-Hellman key you want to use:"
 	echo "   1) ECDH (recommended)"
 	echo "   2) DH"
+	until [[ $DH_TYPE =~ [1-2] ]]; do
+			read -rp"DH key type [1-2]: " -e -i 1 DH_TYPE
+	done
+	case $DH_TYPE in
+		1)
+			echo ""
+			echo "Choose which curve you want to use for the ECDH key:"
+			echo "   1) prime256v1 (recommended)"
+			echo "   2) secp384r1"
+			echo "   3) secp521r1"
+			while [[ $DH_CURVE_CHOICE != "1" && $DH_CURVE_CHOICE != "2" && $DH_CURVE_CHOICE != "3" ]]; do
+				read -rp"Curve [1-3]: " -e -i 1 DH_CURVE_CHOICE
+			done
+			case $DH_CURVE_CHOICE in
+				1)
+					DH_CURVE="prime256v1"
+				;;
+				2)
+					DH_CURVE="secp384r1"
+				;;
+				3)
+					DH_CURVE="secp521r1"
+				;;
+			esac
+		;;
+		2)
+			echo ""
+			echo "Choose what size of DH key you want to use:"
+			echo "   1) 2048 bits (recommended)"
+			echo "   2) 3072 bits"
+			echo "   3) 4096 bits"
+			until [[ "$DH_KEY_SIZE_CHOICE" =~ ^[1-3]$ ]]; do
+				read -rp "DH key size [1-3]: " -e -i 1 DH_KEY_SIZE_CHOICE
+			done
+			case $DH_KEY_SIZE_CHOICE in
+				1)
+					DH_KEY_SIZE="2048"
+				;;
+				2)
+					DH_KEY_SIZE="3072"
+				;;
+				3)
+					DH_KEY_SIZE="4096"
+				;;
+			esac
+		;;
+	esac
 
 	echo "Which digest algorithm do you want to use for HMAC?"
 	echo "   1) SHA-256 (recommended)"
