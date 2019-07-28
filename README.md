@@ -59,11 +59,11 @@ The default cipher is set to AES-128-GCM. AES is today's standard, the fastest a
 ### Control-Channel
 The script provides the following options for negotiation, depending on the certificate used:
 - ECDSA:
--- TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256 - Default
--- TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
+	- TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256, default
+	- TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
 - RSA:
-- TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
--- TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
+	- TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
+	- TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
 
 ### Diffie-Hellman (DH) key exchange
 Generating DH keys can take a long time. ECDH keys are generated quick and ephemeral (generated on demand). So, ECDH key with prime256v1 curve is default for fast, more secure implementation. The script provides options for both ECDH and DH keys:
@@ -74,7 +74,7 @@ DH: 2048,3072, and 4096 bits keys
 ### HMAC digest algorithm
 HMAC is a commonly used message authentication algorithm (MAC) that uses a data string, a secure hash algorithm, and a key, to produce a digital signature. The following options are available:
 
-- SHA256 - default
+- SHA256, default
 - SHA384
 - SHA512
 
