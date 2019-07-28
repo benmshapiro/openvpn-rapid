@@ -47,23 +47,23 @@ TLS version 1.2 is enforced.
 Elliptic curve cryptography (ECDSA) with prime256v1 curve is default. OpenVPN 2.4 added support for ECDSA that is faster, lighter and more secure. The script provides the us of RSA certs if needed.
 
 ### Data Channel
-The default cipher is set to AES-128-GCM. AES is today's standard, the fastest and more secure cipher available today. The script uses the 128 bits key with AES because using a larger key is much slower (AES-256 is 40% slower) [CITATION NEEDED]. Larger keys are also vulnerable to timing attacks [CITATION NEEDED]. The option of using AES in Cipher Block Chaining (AES-CBC) is also provided:
+The default cipher is set to AES-128-GCM. AES is today's standard, the fastest and more secure cipher available today. The script uses a 128 bit key with AES because using a larger key is much slower (AES-256 is 40% slower) [CITATION NEEDED]. Larger keys are also vulnerable to timing attacks [CITATION NEEDED]. The option of using AES in Cipher Block Chaining (AES-CBC) is provided:
 
--AES-128-GCM
--AES-192-GCM
--AES-256-GCM
--AES-128-CBC
--AES-192-CBC
--AES-256-CBC
+- AES-128-GCM
+- AES-192-GCM
+- AES-256-GCM
+- AES-128-CBC
+- AES-192-CBC
+- AES-256-CBC
 
 ### Control-Channel
 The script provides the following options for negotiation, depending on the certificate used:
--ECDSA:
---TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256 - Default
---TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
--RSA:
--TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
---TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
+- ECDSA:
+-- TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256 - Default
+-- TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
+- RSA:
+- TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
+-- TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
 
 ### Diffie-Hellman (DH) key exchange
 Generating DH keys can take a long time. ECDH keys are generated quick and ephemeral (generated on demand). So, ECDH key with prime256v1 curve is default for fast, more secure implementation. The script provides options for both ECDH and DH keys:
