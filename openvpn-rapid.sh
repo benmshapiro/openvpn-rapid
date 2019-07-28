@@ -980,6 +980,43 @@ function revokeClient () {
 	echo "The certificate for client $CLIENT revoked."
 }
 
+function removeUnbound () {
+	# Remove OpenVPN-related configurations.
+	sed -i 's|include: \/etc\/unbound\/openvpn.conf||' /etc/unbound/unbound.conf
+	rm /etc/unbound/openvpn.conf
+	systemctl restart unbound
+
+	until [[ $REMOVE_UNBOUND =~ (y|n) ]]; do
+		echo ""
+		echo "If Unbound was used before installing OpenVPN, only the configuration related to OpenVPN has been removed."
+		read -rp "Do you want to completely remove Unbound? [y/n]: " -e REMOVE_UNBOUND
+	done
+
+	if [[ "$REMOVE_UNBOUND" = 'y' ]]; then
+		
+		# Stop Unbound service.
+		systemctl stop unbound
+
+		if [[ "$OS" =~ (debian|ubuntu) ]]; then
+			apt-get autoremove --purge -y unbound
+		elif [[ "$OS" = 'arch' ]]; then
+			pacman --noconfirm -R unbound
+		elif [[ "$OS" = 'centos' ]]; then
+			yum remove -y unbound
+		elif [[ "$OS" = 'fedora' ]]; then
+			dnf remove -y unbound
+		fi
+
+		rm -rf /etc/unbound/
+
+		echo ""
+		echo "Unbound removal complete"
+	else
+		echo ""
+		echo "Unbound still installed."
+	fi
+}
+
 function manageMenu () {
 	clear
 	echo "Welcome to OpenVPN-rapid!"
