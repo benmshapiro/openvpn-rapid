@@ -516,9 +516,85 @@ APPROVE_INSTALL=${APPROVE_INSTALL:-n}
 if [[ $APPROVE_INSTALL =~ n ]]; then
 	read -n1 -r -p "Press any key to continue..."
 fi
+}
 
-	}
+function newClient () {	
+	echo ""
+	echo "Pick a name for the client."
+	echo "Use one word only, no spaces, no special characters."
 
-	function newClient () {
+	until [[ "$CLIENT" =~ ^[a-zA-Z0-9_]+$ ]]; do
+		read -rp "Client name: " -e CLIENT
+	done
 
+	echo ""
+	echo "Do you want to protect this key with a password?"
+	echo "   1) Add a passwordless client"
+	echo "   2) Use a password for the client"
+
+	until [[ "$PASS" =~ ^[1-2]$ ]]; do
+		read -rp "Select an option [1-2]: " -e -i 1 PASS
+	done
+
+	cd /etc/openvpn/easy-rsa/ || return
+	case $PASS in
+		1)
+			./easyrsa build-client-full "$CLIENT" nopass
+		;;
+		2)
+		echo "You will be asked for the client password below"
+			./easyrsa build-client-full "$CLIENT"
+		;;
+	esac
+
+	# Home directory of the user is where the client configuration is written (.ovpn)
+	if [ -e "/home/$CLIENT" ]; then  # if $1 is a username
+		homeDir="/home/$CLIENT"
+	elif [ "${SUDO_USER}" ]; then   # if not, use SUDO_USER
+		homeDir="/home/${SUDO_USER}"
+	else  # if not SUDO_USER, use /root
+		homeDir="/root"
+	fi
+
+	# Determine is tls-auth or tls-crypt
+	if grep -qs "^tls-crypt" /etc/openvpn/server.conf; then
+		TLS_SIG="1"
+	elif grep -qs "^tls-auth" /etc/openvpn/server.conf; then
+		TLS_SIG="2"
+	fi
+
+	# Generates the client.ovpn
+	cp /etc/openvpn/client-template.txt "$homeDir/$CLIENT.ovpn"
+	{
+		echo "<ca>"
+		cat "/etc/openvpn/easy-rsa/pki/ca.crt"
+		echo "</ca>"
+
+		echo "<cert>"
+		awk '/BEGIN/,/END/' "/etc/openvpn/easy-rsa/pki/issued/$CLIENT.crt"
+		echo "</cert>"
+
+		echo "<key>"
+		cat "/etc/openvpn/easy-rsa/pki/private/$CLIENT.key"
+		echo "</key>"
+
+		case $TLS_SIG in
+			1)
+				echo "<tls-crypt>"
+				cat /etc/openvpn/tls-crypt.key
+				echo "</tls-crypt>"
+			;;
+			2)
+				echo "key-direction 1"
+				echo "<tls-auth>"
+				cat /etc/openvpn/tls-auth.key
+				echo "</tls-auth>"
+			;;
+		esac
+	} >> "$homeDir/$CLIENT.ovpn"
+
+	echo ""
+	echo "Client $CLIENT added, find the configuration at $homeDir/$CLIENT.ovpn."
+
+	exit 0		
 	}
