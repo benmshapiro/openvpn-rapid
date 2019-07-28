@@ -537,7 +537,7 @@ function installOpenVPN () {
 		ENDPOINT=${ENDPOINT:-$PUBLIC_IPV4}
 	fi
 
-	# Run installQuestions() first, then set other variales if auto-install
+	# Run installQuestions() first, then set other variables if auto-install
 	installQuestions
 
 	# Get the public-facing interface from the default route
@@ -1084,7 +1084,7 @@ function removeOpenVPN () {
 function manageMenu () {
 	clear
 	echo "Welcome to OpenVPN-rapid!"
-	echo "A script to rapidly depoly an OpenVPN server on Linux"
+	echo "A script to rapidly deploy an OpenVPN server on Linux"
 	echo "The git repository is available at: https://github.com/benmshapiro/openvpn-rapid"
 	echo ""
 	echo "It looks like an OpenVPN server is already installed."
