@@ -68,8 +68,8 @@ The script provides the following options for negotiation, depending on the cert
 ### Diffie-Hellman (DH) key exchange
 Generating DH keys can take a long time. ECDH keys are generated quick and ephemeral (generated on demand). So, ECDH key with prime256v1 curve is default for fast, more secure implementation. The script provides options for both ECDH and DH keys:
 
-ECDH: prime256v1,secp384r1, and secp521r1 curves
-DH: 2048,3072, and 4096 bits keys
+- ECDH: prime256v1,secp384r1, and secp521r1 curves
+- DH: 2048,3072, and 4096 bits keys
 
 ### HMAC digest algorithm
 HMAC is a commonly used message authentication algorithm (MAC) that uses a data string, a secure hash algorithm, and a key, to produce a digital signature. The following options are available:
