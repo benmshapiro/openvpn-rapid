@@ -727,7 +727,7 @@ cipher $CIPHER
 ncp-ciphers $CIPHER
 tls-server
 tls-version-min 1.2
-tls-cipher $CC_CIPHER
+tls-cipher $CTRL_CIPHER
 status /var/log/openvpn/status.log
 verb 3" >> /etc/openvpn/server.conf
 
@@ -850,7 +850,7 @@ auth-nocache
 cipher $CIPHER
 tls-client
 tls-version-min 1.2
-tls-cipher $CC_CIPHER
+tls-cipher $CTRL_CIPHER
 setenv opt block-outside-dns # Prevent Windows 10 DNS leak
 verb 3" >> /etc/openvpn/client-template.txt
 
