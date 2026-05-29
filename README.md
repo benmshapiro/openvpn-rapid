@@ -1,91 +1,268 @@
 # openvpn-rapid
-A script to rapidly deploy an OpenVPN server on Linux.
+
+A script to rapidly deploy a modern OpenVPN server on Linux with secure defaults and simple client management.
+
+## Quick Start
+
+```bash
+curl -O https://raw.githubusercontent.com/benmshapiro/openvpn-rapid/master/openvpn-rapid.sh
+sudo bash openvpn-rapid.sh
+```
+
+Follow the prompts and import the generated `.ovpn` profile into your OpenVPN client.
 
 ## Features
-- Installs and configures an operative OpenVPN server.
-- OpenVPN 2.4 features: including customizable encryption settings and enhanced default settings.
-- Choice of self-hosted or popular public DNS resolvers (pushed to clients).
-- Manage client certificates; Add and Revoke certs using this script.
-- Script option to cleanly remove OpenVPN from Host (even configuration files and iptable rules).
 
-## Dependencies
-Supports current releases for Debian, Fedora, CentOS, Ubuntu, and Arch Linux.
+- Installs and configures a fully functional OpenVPN server
+- Modern OpenVPN configuration with secure defaults
+- Supports ECDSA and RSA certificates
+- Choice of self-hosted or public DNS resolvers
+- Create and revoke client certificates
+- Automatic firewall and IP forwarding configuration
+- Clean OpenVPN removal option
+- Generates ready-to-use `.ovpn` client profiles
 
-## Installation
-Clone the repository and make the install script executable:
+## Supported Operating Systems
+
+- Debian
+- Ubuntu
+- Fedora
+- CentOS
+- RHEL
+- Rocky Linux
+- AlmaLinux
+- Arch Linux
+- Manjaro
+
+## Requirements
+
+- Root access
+- systemd
+- `/dev/net/tun`
+
+## What This Script Configures
+
+The installer automatically:
+
+- Installs OpenVPN and required dependencies
+- Creates a public key infrastructure (PKI)
+- Generates server and client certificates
+- Enables IPv4 forwarding
+- Configures NAT and forwarding firewall rules
+- Creates a systemd service to restore firewall rules after reboot
+- Generates OpenVPN client profiles
+
+## Initial Configuration
+
+When run for the first time, the script prompts for:
+
+- VPN listen IPv4 address
+- Public endpoint (if behind NAT)
+- OpenVPN port
+- Protocol (UDP or TCP)
+- DNS provider
+- Certificate type
+- Initial client name
+- Client key protection option
+
+### DNS Provider Options
+
+1. Current system resolvers
+2. Self-hosted Unbound
+3. Cloudflare
+4. Quad9
+5. OpenDNS
+6. Google
+
+### Certificate Options
+
+- ECDSA (`prime256v1`)
+- RSA 3072-bit
+
+### Client Key Options
+
+- Passwordless
+- Password-protected
+
+## Security Defaults
+
+The script favors secure modern defaults:
+
+- TLS minimum version: 1.2
+- `tls-crypt`
+- `auth SHA256`
+- ECDH curve: `prime256v1`
+- `dh none`
+- Certificate revocation list (CRL) support
+- Redirect all client traffic through the VPN
+
+### Data Channel Ciphers
+
+```text
+AES-256-GCM:AES-128-GCM:CHACHA20-POLY1305
 ```
-curl -O https://raw.githubusercontent.com/benmshapiro/openvpn-rapid/master/openvpn-rapid.sh
-chmod +x openvpn-rapid.sh
+
+Fallback cipher:
+
+```text
+AES-256-GCM
 ```
-Then run the install script:
-```
-./openvpn-rapid.sh
-```
-NOTE: Run the script as root and have the TUN module enabled.
+
+## OpenVPN Compatibility
+
+The generated configuration is intended for OpenVPN 2.5+ and OpenVPN Connect clients.
+
+Older OpenVPN clients may not support the configured cipher suite or TLS settings.
 
 ## Usage
-The first time you run this script, you'll have to answer a few questions to setup your OpenVPN server.
 
-When OpenVPN is installed, you can run the script again, and you will get the choice to :
+After installation, running the script again displays:
 
-- Add a client
-- Remove a client
-- Uninstall OpenVPN
+1. Add a new client profile
+2. Revoke an existing client certificate
+3. Remove OpenVPN
+4. Exit
 
-.OVPN are placed in your home directory after adding a new client. Download them from your server and connect using your favorite OpenVPN client.
+### Adding Additional Clients
 
-## Options
-This script provides stronger default security and encryption settings for OpenVPN than it's stock configuration.
+Run:
 
-### Compression
-Compression is disabled, but the script provides options for LZ0 and LZ4 (v1/v2) algorithms.
+```bash
+sudo bash openvpn-rapid.sh
+```
 
-### TLS version
-TLS version 1.2 is enforced.
+Then select **Add a new client profile**.
 
-### Certificate
-Elliptic curve cryptography (ECDSA) with prime256v1 curve is default. OpenVPN 2.4 added support for ECDSA that is faster, lighter and more secure. The script provides the us of RSA certs if needed.
+### Revoking Clients
 
-### Data Channel
-The default cipher is set to AES-128-GCM. AES is today's standard, the fastest and more secure cipher available today. The script uses a 128 bit key with AES because using a larger key is much slower (AES-256 is 40% slower) [CITATION NEEDED]. Larger keys are also vulnerable to timing attacks [CITATION NEEDED]. The option of using AES in Cipher Block Chaining (AES-CBC) is provided:
+Revoking a client certificate prevents that certificate from authenticating to the VPN.
 
-- AES-128-GCM
-- AES-192-GCM
-- AES-256-GCM
-- AES-128-CBC
-- AES-192-CBC
-- AES-256-CBC
+Deleting an `.ovpn` file alone does not revoke access.
 
-### Control-Channel
-The script provides the following options for negotiation, depending on the certificate used:
-- ECDSA:
-	- TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256, default
-	- TLS-ECDHE-ECDSA-WITH-AES-256-GCM-SHA384
-- RSA:
-	- TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256
-	- TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384
+### Client Profile Location
 
-### Diffie-Hellman (DH) key exchange
-Generating DH keys can take a long time. ECDH keys are generated quick and ephemeral (generated on demand). So, ECDH key with prime256v1 curve is default for fast, more secure implementation. The script provides options for both ECDH and DH keys:
+Generated client profiles are saved to:
 
-- ECDH: prime256v1,secp384r1, and secp521r1 curves
-- DH: 2048,3072, and 4096 bits keys
+- `/home/$SUDO_USER/<client>.ovpn` when run with sudo
+- `/root/<client>.ovpn` when run directly as root
 
-### HMAC digest algorithm
-HMAC is a commonly used message authentication algorithm (MAC) that uses a data string, a secure hash algorithm, and a key, to produce a digital signature. The following options are available:
+## Firewall Configuration
 
-- SHA256, default
-- SHA384
-- SHA512
+The script automatically:
 
-### tls-auth and tls-crypt
-The script uses tls-crypt by default.'tls-auth' and 'tls-crypt' provide an additional layer of security and mitigate DoS attacks. They aren't used by default by OpenVPN.
+- Enables IPv4 forwarding
+- Creates NAT and forwarding rules
+- Creates:
 
-## Contribute
+```text
+/etc/iptables/add-openvpn-rules.sh
+/etc/iptables/rm-openvpn-rules.sh
+```
 
-Found an issue? Post it in the [issue tracker](https://github.com/benmshapiro/openvpn-rapid/issues). <br> 
-Want to add another awesome feature? [Fork](https://github.com/benmshapiro/openvpn-rapid/fork) this repository and add your feature, then send a pull request.
+- Installs and enables:
+
+```text
+iptables-openvpn.service
+```
+
+## Cloud Provider Notes
+
+If hosted behind a cloud firewall or security group, ensure the selected OpenVPN port is allowed.
+
+Examples:
+
+- AWS Security Groups
+- Google Cloud Firewall Rules
+- Azure Network Security Groups
+- Oracle Cloud Security Lists
+
+## Troubleshooting
+
+### Cannot Connect
+
+Verify:
+
+- OpenVPN is running
+- The selected port is open
+- Cloud firewall rules allow traffic
+- The `.ovpn` profile contains the correct public IP or hostname
+
+### TUN Device Missing
+
+Verify `/dev/net/tun` exists and is enabled by your provider.
+
+### DNS Not Resolving
+
+Reconnect the VPN client and verify the selected DNS provider is reachable.
+
+## Useful Commands
+
+Check OpenVPN status:
+
+```bash
+systemctl status openvpn-server@server
+```
+
+Check firewall service:
+
+```bash
+systemctl status iptables-openvpn
+```
+
+View logs:
+
+```bash
+journalctl -u openvpn-server@server
+```
+
+Check listening ports:
+
+```bash
+ss -tulpn | grep openvpn
+```
+
+## Uninstalling OpenVPN
+
+Selecting **Remove OpenVPN** will:
+
+- Stop and disable OpenVPN services
+- Stop and disable `iptables-openvpn.service`
+- Remove OpenVPN packages
+- Remove generated client profiles
+- Remove firewall helper scripts
+- Remove OpenVPN configuration files
+- Remove Easy-RSA data and certificates
+- Remove log files
+- Remove IP forwarding configuration
+
+Including cleanup of:
+
+```text
+/etc/openvpn
+/var/log/openvpn
+/etc/sysctl.d/20-openvpn.conf
+```
+
+## Security Philosophy
+
+This project favors:
+
+- Secure defaults
+- Minimal user decisions
+- Strong cryptography
+- Modern TLS configuration
+- Easy maintenance
+
+## Contributing
+
+Issues and pull requests are welcome.
+
+Repository:
+
+https://github.com/benmshapiro/openvpn-rapid
 
 ## License
-The MIT License (MIT)
-Copyright &copy; 2019 Ben Shapiro
+
+MIT License
+
+Copyright © 2019–2026 Ben Shapiro
